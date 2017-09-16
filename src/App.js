@@ -24,25 +24,21 @@ class App extends Component {
   It first takes the required book by using id property of the book and then update the shelf
   */
   changeState=(book,shelf)=>{
-    BooksAPI.get(book.id).then((Book)=>
-      BooksAPI.update(Book,shelf).then(
-        BooksAPI.getAll().then((response)=>
-          {
-            this.setState({
-              books:response
-            })
-          }
-        )
-      )
-    );
+    if(book.shelf!= shelf){
+      BooksAPI.update(book,shelf).then((response)=>{
+        book.shelf=shelf;
+        this.setState((state)=>({
+          books: state.books.filter(b=> b.id !==book.id).concat(book)
+        }))
+      });
+      alert("book moved to " + shelf);
+    }
   }
 //This will load all the books
   componentDidMount=()=> {
-    BooksAPI.getAll().then((response)=>
+    BooksAPI.getAll().then((books)=>
     {
-        this.setState({
-          books : response
-        });
+        this.setState({books});
     })
   }
 
