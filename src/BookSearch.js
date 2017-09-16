@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import ListBooks from './ListBooks' ;
 import * as BooksAPI from './BooksAPI';
+import escRegExp from 'escape-string-regexp'; 
 /*
 @description Represents component that is used to search books.
 Results of the search are passed to the component @ListBooks.js for display.
@@ -11,7 +12,7 @@ class BookSearch extends Component{
 
     state={
         query : "" ,
-        availableBooks : this.props.books
+        availableBooks : []
     }
     /*
     @updateShelf func  that will again call the @changeState func
@@ -20,7 +21,6 @@ class BookSearch extends Component{
     */
     updateShelf=(book,newShelf)=>{
         this.props.changeState(book,newShelf);
-        alert("book moved to " + newShelf);
     }
     /*
     @query { string }
@@ -28,47 +28,44 @@ class BookSearch extends Component{
     @availableBooks {object} will receive the books from response that @BooksAPI.search() returns
     This param is then passed on to the @ListBooks.js component for displaying the search results
     */
-    updateQuery=(query)=>{
-        if(query){
+    updateQuery=(val)=>{
+        const value=val.trim();
+        if(value){
             this.setState({
-                query: query.trim()
-            })
-            BooksAPI.search(query,20).then((response)=>
-            {
-                if((!response.error)){
-                    this.setState({availableBooks :response});
-                }
-                else{
+                query: value
+            });
+            
+            BooksAPI.search(value,20).then((foundBooks) => {
+                if((foundBooks.length>0)&&(!foundBooks.error)){
+                    let books = foundBooks.map((foundBook) => {
+                        const book=this.props.books.find((book) => book.id === foundBook.id)
+                        foundBook.shelf = book? book.shelf :'none';
+                        return foundBook;
+                    });
+                    console.log(books)
                     this.setState({
-                        availableBooks : [],
-                        query:""
-                    })
-                    alert("no such book available")
-                }
-            }).catch(
-                (response)=>
-                    {
-                    alert("No such book available")
-                    }
-                )
+                        availableBooks: books
+                    });
+                }        
+            }).catch(err=>{console.log(err)});
         }
         else{
             this.setState({
                 query:"",
-                availableBooks : []
-            })
+                availableBooks: []
+            });
         }
     }
-// To clear the user query
-    clearQuery=()=>{
+    clearQuery=(query)=>{
         this.setState({
-            query : "",
-            availableBooks : []
-        })
+            query:"",
+            availableBooks: []
+        });
     }
 
     render(){
-        const { query, availableBooks }=this.state;
+        const { query, availableBooks  }=this.state;
+        
         return(
             <div className="search-books">
                 <div className='search-books-bar' >
