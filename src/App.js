@@ -31,7 +31,7 @@ class App extends Component {
           books: state.books.filter(b=> b.id !==book.id).concat(book)
         }))
       });
-      alert("book moved to " + shelf);
+      
     }
   }
 //This will load all the books
